@@ -4,6 +4,8 @@
 
 package com.jetbrains.mylyn.yt.core;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -15,10 +17,12 @@ import java.util.Set;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.mylyn.internal.tasks.core.AbstractTaskContainer;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.ui.TasksUiPlugin;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.IRepositoryElement;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -351,5 +355,20 @@ public class YouTrackRepositoryConnector extends AbstractRepositoryConnector {
   public void updateRepositoryConfiguration(TaskRepository taskRepository, ITask task,
       IProgressMonitor monitor) throws CoreException {
     forceUpdateProjectCustomFields(taskRepository, getProjectNameFromId(task.getTaskKey()));
+  }
+
+  @Override
+  public URL getBrowserUrl(TaskRepository repository, IRepositoryElement element) {
+    try {
+      if (element instanceof ITask) {
+    	  return new URL(repository.getRepositoryUrl()+ ISSUE_URL_PREFIX + getYoutrackIssueId(((ITask) element).getTaskId()));
+      } else {
+        System.out.println("element has class " + element.getClass().getCanonicalName());
+        return new URL(repository.getRepositoryUrl()+ ISSUE_URL_PREFIX + element.getHandleIdentifier());
+      }
+    } catch (MalformedURLException e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 }
